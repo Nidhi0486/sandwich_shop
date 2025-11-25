@@ -1,9 +1,6 @@
-// Ensure this file is inside a Flutter project (created with `flutter create`) and
-// that the Flutter SDK is installed. Then run `flutter pub get` in the project root.
-// If you still see "Target of URI doesn't exist", open the project folder (not just the file)
-// in a Flutter-enabled IDE (Android Studio, VS Code with Flutter plugin) so the analyzer
-// can resolve `package:flutter/...`.
 import 'package:flutter/material.dart';
+import 'package:sandwich_shop/views/app_styles.dart';
+import 'package:sandwich_shop/repositories/order_repository.dart';
 
 void main() {
   runApp(const App());
@@ -21,9 +18,8 @@ class App extends StatelessWidget {
   }
 }
 
-// ✅ Enums for sandwich size and bread type
+// Enums
 enum SandwichSize { sixInch, footlong }
-
 enum BreadType { white, wholemeal, italianHerbs }
 
 class OrderScreen extends StatefulWidget {
@@ -36,20 +32,34 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  int _quantity = 0;
+  late final OrderRepository _orderRepository;
+
   SandwichSize _selectedSize = SandwichSize.sixInch;
   BreadType _selectedBread = BreadType.white;
 
-  void _increaseQuantity() {
-    if (_quantity < widget.maxQuantity) {
-      setState(() => _quantity++);
-    }
+  @override
+  void initState() {
+    super.initState();
+    _orderRepository = OrderRepository(maxQuantity: widget.maxQuantity);
   }
 
-  void _decreaseQuantity() {
-    if (_quantity > 0) {
-      setState(() => _quantity--);
+  // Worksheet 4 callback helpers
+  VoidCallback? _getIncreaseCallback() {
+    if (_orderRepository.canIncrement) {
+      return () => setState(() {
+            _orderRepository.increment();
+          });
     }
+    return null;
+  }
+
+  VoidCallback? _getDecreaseCallback() {
+    if (_orderRepository.canDecrement) {
+      return () => setState(() {
+            _orderRepository.decrement();
+          });
+    }
+    return null;
   }
 
   @override
@@ -63,7 +73,7 @@ class _OrderScreenState extends State<OrderScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ✅ Sandwich size selector
+            // Size selector
             SegmentedButton<SandwichSize>(
               segments: const [
                 ButtonSegment(
@@ -81,7 +91,7 @@ class _OrderScreenState extends State<OrderScreen> {
 
             const SizedBox(height: 20),
 
-            // ✅ Bread type dropdown
+            // Bread dropdown
             DropdownButton<BreadType>(
               value: _selectedBread,
               onChanged: (BreadType? newValue) {
@@ -100,9 +110,9 @@ class _OrderScreenState extends State<OrderScreen> {
 
             const SizedBox(height: 30),
 
-            // ✅ Display current quantity and type
+            // Display widget
             OrderItemDisplay(
-              quantity: _quantity,
+              quantity: _orderRepository.quantity,
               sandwichType: _selectedSize == SandwichSize.footlong
                   ? 'Footlong'
                   : 'Six-inch',
@@ -111,21 +121,20 @@ class _OrderScreenState extends State<OrderScreen> {
 
             const SizedBox(height: 30),
 
-            // ✅ Buttons with spacing and alignment
+            // Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 StyledButton(
                   text: 'Remove',
                   icon: Icons.remove,
-                  onPressed: _quantity > 0 ? _decreaseQuantity : null,
+                  onPressed: _getDecreaseCallback(),
                   color: Colors.red,
                 ),
                 StyledButton(
                   text: 'Add',
                   icon: Icons.add,
-                  onPressed:
-                      _quantity < widget.maxQuantity ? _increaseQuantity : null,
+                  onPressed: _getIncreaseCallback(),
                   color: Colors.green,
                 ),
               ],
@@ -137,7 +146,7 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 }
 
-// ✅ Reusable styled button widget
+// Styled button widget
 class StyledButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
@@ -168,34 +177,4 @@ class StyledButton extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) Icon(icon),
-          if (icon != null) const SizedBox(width: 8),
-          Text(text),
-        ],
-      ),
-    );
-  }
-}
-
-// ✅ Display widget for showing order info
-class OrderItemDisplay extends StatelessWidget {
-  final int quantity;
-  final String sandwichType;
-  final String breadType;
-
-  const OrderItemDisplay({
-    super.key,
-    required this.quantity,
-    required this.sandwichType,
-    required this.breadType,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      '$quantity $sandwichType sandwich(es) on $breadType bread',
-      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-      textAlign: TextAlign.center,
-    );
-  }
-}
+          if (icon != null) Icon(i

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class AppStyles {
-  static const TextStyle heading = TextStyle(
-    fontSize: 22,
-    fontWeight: FontWeight.bold,
+  static const TextStyle normalText = TextStyle(
+    fontSize: 18,
+    color: Colors.black,
   );
 
-  static const TextStyle label = TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w500,
+  static const TextStyle titleText = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.bold,
   );
 }

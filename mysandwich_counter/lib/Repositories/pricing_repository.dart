@@ -127,7 +127,7 @@ class _OrderScreenState extends State<OrderScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Sandwich Shop', style: heading1),
+        title: const Text('Mr Tree Sandwiches', style: heading1),
       ),
       body: Center(
         child: SingleChildScrollView(

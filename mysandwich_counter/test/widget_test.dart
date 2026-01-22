@@ -1,30 +1,50 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-
-import 'package:mysandwich_counter/main.dart';
-
+/// A simple console version of the Sandwich counter so this file compiles
+/// outside of a Flutter environment (e.g. plain Dart test runs).
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  final app = OrderApp(maxQuantity: 5);
+  app.showStatus();
+  app.increase();
+  app.increase();
+  app.showStatus();
+  app.decrease();
+  app.showStatus();
+}
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+enum SandwichSize { sixInch, footlong }
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+enum BreadType { white, wholemeal, italianHerbs }
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+class OrderApp {
+  final int maxQuantity;
+  int _quantity = 0;
+  SandwichSize _selectedSize = SandwichSize.sixInch;
+  BreadType _selectedBread = BreadType.white;
+
+  OrderApp({this.maxQuantity = 10});
+
+  void increase() {
+    if (_quantity < maxQuantity) {
+      _quantity++;
+    } else {
+      print('Cannot add more than $maxQuantity items.');
+    }
+  }
+
+  void decrease() {
+    if (_quantity > 0) {
+      _quantity--;
+    } else {
+      print('Quantity is already zero.');
+    }
+  }
+
+  void setSize(SandwichSize size) => _selectedSize = size;
+
+  void setBread(BreadType bread) => _selectedBread = bread;
+
+  void showStatus() {
+    final sandwichType = _selectedSize == SandwichSize.footlong ? 'Footlong' : 'Six-inch';
+    final bread = _selectedBread.name;
+    print('Quantity: $_quantity | Type: $sandwichType | Bread: $bread');
+  }
 }

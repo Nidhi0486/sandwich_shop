@@ -1,122 +1,228 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const App());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class App extends StatelessWidget {
+  const App({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    return const MaterialApp(
+      title: 'Sandwich Shop App',
+      home: OrderScreen(maxQuantity: 5),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+// Simple order repository (local) to manage quantity
+class OrderRepository {
+  int _quantity = 1;
+  final int maxQuantity;
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+  OrderRepository({this.maxQuantity = 10});
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  int get quantity => _quantity;
 
-  final String title;
+  bool get canIncrement => _quantity < maxQuantity;
+  bool get canDecrement => _quantity > 0;
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  void increment() {
+    if (canIncrement) _quantity++;
+  }
+
+  void decrement() {
+    if (canDecrement) _quantity--;
+  }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+// Enums
+enum SandwichSize { sixInch, footlong }
+enum BreadType { white, wholemeal, italianHerbs }
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+class OrderScreen extends StatefulWidget {
+  final int maxQuantity;
+
+  const OrderScreen({super.key, this.maxQuantity = 10});
+
+  @override
+  State<OrderScreen> createState() => _OrderScreenState();
+}
+
+class _OrderScreenState extends State<OrderScreen> {
+  late final OrderRepository _orderRepository;
+
+  SandwichSize _selectedSize = SandwichSize.sixInch;
+  BreadType _selectedBread = BreadType.white;
+
+  @override
+  void initState() {
+    super.initState();
+    _orderRepository = OrderRepository(maxQuantity: widget.maxQuantity);
+  }
+
+  VoidCallback? _getIncreaseCallback() {
+    if (_orderRepository.canIncrement) {
+      return () => setState(() {
+            _orderRepository.increment();
+          });
+    }
+    return null;
+  }
+
+  VoidCallback? _getDecreaseCallback() {
+    if (_orderRepository.canDecrement) {
+      return () => setState(() {
+            _orderRepository.decrement();
+          });
+    }
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('Sandwich Counter'),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+          children: [
+            // Size selector
+            SegmentedButton<SandwichSize>(
+              segments: const [
+                ButtonSegment(value: SandwichSize.sixInch, label: Text('Six-inch')),
+                ButtonSegment(value: SandwichSize.footlong, label: Text('Footlong')),
+              ],
+              selected: <SandwichSize>{_selectedSize},
+              onSelectionChanged: (Set<SandwichSize> newSelection) {
+                setState(() {
+                  _selectedSize = newSelection.first;
+                });
+              },
+            ),
+
+            const SizedBox(height: 20),
+
+            // Bread dropdown
+            DropdownButton<BreadType>(
+              value: _selectedBread,
+              onChanged: (BreadType? newValue) {
+                setState(() {
+                  _selectedBread = newValue!;
+                });
+              },
+              items: BreadType.values.map((BreadType type) {
+                return DropdownMenuItem<BreadType>(
+                  value: type,
+                  child: Text(type.name[0].toUpperCase() + type.name.substring(1)),
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 30),
+
+            // Display widget
+            OrderItemDisplay(
+              quantity: _orderRepository.quantity,
+              sandwichType: _selectedSize == SandwichSize.footlong ? 'Footlong' : 'Six-inch',
+              breadType: _selectedBread.name,
+            ),
+
+            const SizedBox(height: 30),
+
+            // Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                StyledButton(
+                  text: 'Remove',
+                  icon: Icons.remove,
+                  onPressed: _getDecreaseCallback(),
+                  color: Colors.red,
+                ),
+                StyledButton(
+                  text: 'Add',
+                  icon: Icons.add,
+                  onPressed: _getIncreaseCallback(),
+                  color: Colors.green,
+                ),
+              ],
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
+
+// Styled button widget
+class StyledButton extends StatelessWidget {
+  final String text;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+  final Color color;
+
+  const StyledButton({
+    super.key,
+    required this.text,
+    required this.onPressed,
+    this.icon,
+    this.color = Colors.blueAccent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        textStyle: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 18),
+            const SizedBox(width: 8),
+          ],
+          Text(text),
+        ],
+      ),
+    );
+  }
+}
+
+// Display widget
+class OrderItemDisplay extends StatelessWidget {
+  final int quantity;
+  final String sandwichType;
+  final String breadType;
+
+  const OrderItemDisplay({super.key, required this.quantity, required this.sandwichType, required this.breadType});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          '$quantity x $sandwichType',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Text('Bread: $breadType'),
+        const SizedBox(height: 8),
+        Text('Total: £${(quantity * 11).toStringAsFixed(2)}'),
+      ],
+    );
+  }
+}
+

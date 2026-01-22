@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sandwich_shop/views/app_styles.dart';
-import 'package:sandwich_shop/repositories/order_repository.dart';
 
 void main() {
   runApp(const App());
@@ -15,6 +13,27 @@ class App extends StatelessWidget {
       title: 'Sandwich Shop App',
       home: OrderScreen(maxQuantity: 5),
     );
+  }
+}
+
+// Simple order repository (local) to manage quantity
+class OrderRepository {
+  int _quantity = 1;
+  final int maxQuantity;
+
+  OrderRepository({this.maxQuantity = 10});
+
+  int get quantity => _quantity;
+
+  bool get canIncrement => _quantity < maxQuantity;
+  bool get canDecrement => _quantity > 0;
+
+  void increment() {
+    if (canIncrement) _quantity++;
+  }
+
+  void decrement() {
+    if (canDecrement) _quantity--;
   }
 }
 
@@ -43,7 +62,6 @@ class _OrderScreenState extends State<OrderScreen> {
     _orderRepository = OrderRepository(maxQuantity: widget.maxQuantity);
   }
 
-  // Worksheet 4 callback helpers
   VoidCallback? _getIncreaseCallback() {
     if (_orderRepository.canIncrement) {
       return () => setState(() {
@@ -76,10 +94,8 @@ class _OrderScreenState extends State<OrderScreen> {
             // Size selector
             SegmentedButton<SandwichSize>(
               segments: const [
-                ButtonSegment(
-                    value: SandwichSize.sixInch, label: Text('Six-inch')),
-                ButtonSegment(
-                    value: SandwichSize.footlong, label: Text('Footlong')),
+                ButtonSegment(value: SandwichSize.sixInch, label: Text('Six-inch')),
+                ButtonSegment(value: SandwichSize.footlong, label: Text('Footlong')),
               ],
               selected: <SandwichSize>{_selectedSize},
               onSelectionChanged: (Set<SandwichSize> newSelection) {
@@ -102,8 +118,7 @@ class _OrderScreenState extends State<OrderScreen> {
               items: BreadType.values.map((BreadType type) {
                 return DropdownMenuItem<BreadType>(
                   value: type,
-                  child:
-                      Text(type.name[0].toUpperCase() + type.name.substring(1)),
+                  child: Text(type.name[0].toUpperCase() + type.name.substring(1)),
                 );
               }).toList(),
             ),
@@ -113,9 +128,7 @@ class _OrderScreenState extends State<OrderScreen> {
             // Display widget
             OrderItemDisplay(
               quantity: _orderRepository.quantity,
-              sandwichType: _selectedSize == SandwichSize.footlong
-                  ? 'Footlong'
-                  : 'Six-inch',
+              sandwichType: _selectedSize == SandwichSize.footlong ? 'Footlong' : 'Six-inch',
               breadType: _selectedBread.name,
             ),
 
@@ -177,4 +190,39 @@ class StyledButton extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) Icon(i
+          if (icon != null) ...[
+            Icon(icon, size: 18),
+            const SizedBox(width: 8),
+          ],
+          Text(text),
+        ],
+      ),
+    );
+  }
+}
+
+// Display widget
+class OrderItemDisplay extends StatelessWidget {
+  final int quantity;
+  final String sandwichType;
+  final String breadType;
+
+  const OrderItemDisplay({super.key, required this.quantity, required this.sandwichType, required this.breadType});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          '$quantity x $sandwichType',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Text('Bread: $breadType'),
+        const SizedBox(height: 8),
+        Text('Total: £${(quantity * 11).toStringAsFixed(2)}'),
+      ],
+    );
+  }
+}
+

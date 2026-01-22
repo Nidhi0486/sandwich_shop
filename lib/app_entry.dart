@@ -32,6 +32,7 @@ class _OrderScreenState extends State<OrderScreen> {
   late final OrderRepository _orderRepository;
   final TextEditingController _notesController = TextEditingController();
   bool _isFootlong = true;
+  BreadType _selectedBreadType = BreadType.white;
   bool _isToasted = false;
 
   final PricingRepository _pricing = PricingRepository();
@@ -66,6 +67,7 @@ class _OrderScreenState extends State<OrderScreen> {
   @override
   Widget build(BuildContext context) {
     final sandwichType = _isFootlong ? 'footlong' : 'six-inch';
+    final noteForDisplay = _notesController.text.isEmpty ? 'No notes added.' : _notesController.text;
     final sizeEnum = _isFootlong ? SandwichSize.footlong : SandwichSize.sixInch;
     final total = _pricing.totalPrice(quantity: _orderRepository.quantity, size: sizeEnum);
 
@@ -121,6 +123,9 @@ class _OrderScreenState extends State<OrderScreen> {
                     const Text('toasted', style: normalText),
                   ],
                 ),
+
+                const SizedBox(height: 8),
+                Text('Toasted: ${_isToasted ? 'Yes' : 'No'}'),
 
                 const SizedBox(height: 20),
                 Row(

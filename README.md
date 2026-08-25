@@ -1,16 +1,38 @@
-# sandwich_shop
+# Sandwich Shop 🥪
 
-A new Flutter project.
+A Flutter-based sandwich ordering application developed as part of a University of Portsmouth programming project.
 
-## Getting Started
+## About the Project
 
-This project is a starting point for a Flutter application.
+This application allows users to browse sandwich options, customise their selections and create orders through a mobile-friendly interface.
 
-A few resources to get you started if this is your first Flutter project:
+## Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Sandwich selection
+- Order creation
+- Customised order options
+- Interactive user interface
+- Stateful Flutter widgets
+- Order screen functionality
+- Testing and debugging
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Technologies
+
+- Flutter
+- Dart
+- Git & GitHub
+
+## My Contribution
+
+Developed and extended the application as part of a university programming project, implementing user interface components, order functionality and interactive features.
+
+## Learning Outcomes
+
+Through this project, I gained experience with:
+
+- Flutter and Dart
+- Mobile application development
+- Stateful widgets
+- User interface design
+- Testing and debugging
+- Git and GitHub
